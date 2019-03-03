@@ -2,6 +2,7 @@
 {
     using System.Windows.Input;
     using GalaSoft.MvvmLight.Command;
+    using Shop.UIForms.Views;
     using Xamarin.Forms;
 
     public class LoginViewModel
@@ -11,6 +12,12 @@
         public string Password { get; set; }
 
         public ICommand LoginCommand => new RelayCommand(Login);
+
+        public LoginViewModel()
+        {
+            this.Email = "danielgiraldo92@gmail.com";
+            this.Password = "123456";
+        }
 
         private async void Login()
         {
@@ -34,11 +41,20 @@
 
             if (!this.Email.Equals("danielgiraldo92@gmail.com") || !this.Password.Equals("123456"))
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Incorrect user or password", "Accept");
+                await Application.Current.MainPage.DisplayAlert(
+                    "Error", 
+                    "User or password wrong.", 
+                    "Accept");
                 return;
             }
 
-            await Application.Current.MainPage.DisplayAlert("Ok", "Fuck yeah!!!", "Accept");
+            //await Application.Current.MainPage.DisplayAlert(
+            //  "Ok", 
+            //  "Fuck yeah!!!", 
+            //  "Accept");
+
+            MainViewModel.GetInstance().Products = new ProductsViewModel();
+            await Application.Current.MainPage.Navigation.PushAsync(new ProductsPage());
         }
     }
 }
