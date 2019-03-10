@@ -58,10 +58,65 @@
             // Add products
             if (!this.context.Products.Any())
             {
-                this.AddProduct("Zapatos", user);
+                this.AddProduct("Sombrero", user);
                 this.AddProduct("Reloj", user);
                 this.AddProduct("Gafas", user);
                 await this.context.SaveChangesAsync();
+            }
+
+            // Add other user
+            user = await this.userHelper.GetUserByEmailAsync("pepito@gmail.com");
+            if (user == null)
+            {
+                user = new User
+                {
+                    FirstName = "Pedro",
+                    LastName = "Perez",
+                    Email = "pepito@gmail.com",
+                    UserName = "pepito@gmail.com",
+                    PhoneNumber = "555555"
+                };
+
+                var result = await this.userHelper.AddUserAsync(user, "654321");
+                if (result != IdentityResult.Success)
+                {
+                    throw new InvalidOperationException("Could not create the user in seeder");
+                }
+
+                await this.userHelper.AddUserToRoleAsync(user, "Customer");
+            }
+
+            isInRole = await this.userHelper.IsUserInRoleAsync(user, "Customer");
+            if (!isInRole)
+            {
+                await this.userHelper.AddUserToRoleAsync(user, "Customer");
+            }
+
+            user = await this.userHelper.GetUserByEmailAsync("camilo@gmail.com");
+            if (user == null)
+            {
+                user = new User
+                {
+                    FirstName = "Camilo",
+                    LastName = "Giraldo",
+                    Email = "camilo@gmail.com",
+                    UserName = "camilo@gmail.com",
+                    PhoneNumber = "555555"
+                };
+
+                var result = await this.userHelper.AddUserAsync(user, "654321");
+                if (result != IdentityResult.Success)
+                {
+                    throw new InvalidOperationException("Could not create the user in seeder");
+                }
+
+                await this.userHelper.AddUserToRoleAsync(user, "Customer");
+            }
+
+            isInRole = await this.userHelper.IsUserInRoleAsync(user, "Customer");
+            if (!isInRole)
+            {
+                await this.userHelper.AddUserToRoleAsync(user, "Customer");
             }
         }
 
