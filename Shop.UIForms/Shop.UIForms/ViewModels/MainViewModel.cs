@@ -1,10 +1,13 @@
-﻿using Shop.Common.Models;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-
-namespace Shop.UIForms.ViewModels
+﻿namespace Shop.UIForms.ViewModels
 {
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
+    using System.Windows.Input;
+    using Common.Models;
+    using GalaSoft.MvvmLight.Command;
+    using Views;
+
     public class MainViewModel
     {
         private static MainViewModel instance;
@@ -17,10 +20,20 @@ namespace Shop.UIForms.ViewModels
 
         public ProductsViewModel Products { get; set; }
 
+        public AddProductViewModel AddProduct { get; set; }
+
+        public ICommand AddProductCommand => new RelayCommand(this.GoAddProduct);
+
         public MainViewModel()
         {
             instance = this;
             this.LoadMenus();
+        }
+
+        private async void GoAddProduct()
+        {
+            this.AddProduct = new AddProductViewModel();
+            await App.Navigator.PushAsync(new AddProductPage());
         }
 
         private void LoadMenus()
