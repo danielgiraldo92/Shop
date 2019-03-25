@@ -1,6 +1,7 @@
 ﻿namespace Shop.Web.Data
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Entities;
@@ -27,6 +28,22 @@
             await this.userHelper.CheckRoleAsync("Admin");
             await this.userHelper.CheckRoleAsync("Customer");
 
+            if (!this.context.Countries.Any())
+            {
+                var cities = new List<City>();
+                cities.Add(new City { Name = "Medellín" });
+                cities.Add(new City { Name = "Bogotá" });
+                cities.Add(new City { Name = "Calí" });
+
+                this.context.Countries.Add(new Country
+                {
+                    Cities = cities,
+                    Name = "Colombia"
+                });
+
+                await this.context.SaveChangesAsync();
+            }
+
             // Add user
             var user = await this.userHelper.GetUserByEmailAsync("danielgiraldo92@gmail.com");
             if (user == null)
@@ -37,7 +54,10 @@
                     LastName = "Giraldo",
                     Email = "danielgiraldo92@gmail.com",
                     UserName = "danielgiraldo92@gmail.com",
-                    PhoneNumber = "123456987"
+                    PhoneNumber = "123456987",
+                    Address = "Calle Luna Calle Sol",
+                    CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
+                    City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
                 };
 
                 var result = await this.userHelper.AddUserAsync(user, "123456");
@@ -74,7 +94,10 @@
                     LastName = "Perez",
                     Email = "pepito@gmail.com",
                     UserName = "pepito@gmail.com",
-                    PhoneNumber = "555555"
+                    PhoneNumber = "555555",
+                    Address = "Calle Luna Calle Sol",
+                    CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
+                    City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
                 };
 
                 var result = await this.userHelper.AddUserAsync(user, "654321");
@@ -101,7 +124,10 @@
                     LastName = "Giraldo",
                     Email = "camilo@gmail.com",
                     UserName = "camilo@gmail.com",
-                    PhoneNumber = "555555"
+                    PhoneNumber = "555555",
+                    Address = "Calle Luna Calle Sol",
+                    CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
+                    City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
                 };
 
                 var result = await this.userHelper.AddUserAsync(user, "654321");
