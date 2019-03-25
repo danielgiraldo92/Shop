@@ -1,7 +1,6 @@
 ﻿namespace Shop.Web.Data
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Entities;
@@ -12,7 +11,7 @@
     {
         private readonly DataContext context;
         private readonly IUserHelper userHelper;
-        private Random random;
+        private readonly Random random;
 
         public SeedDb(DataContext context, IUserHelper userHelper)
         {
@@ -25,142 +24,126 @@
         {
             await this.context.Database.EnsureCreatedAsync();
 
-            await this.userHelper.CheckRoleAsync("Admin");
-            await this.userHelper.CheckRoleAsync("Customer");
+            await this.CheckRoles();
 
             if (!this.context.Countries.Any())
             {
-                var cities = new List<City>();
-                cities.Add(new City { Name = "Medellín" });
-                cities.Add(new City { Name = "Bogotá" });
-                cities.Add(new City { Name = "Calí" });
-
-                this.context.Countries.Add(new Country
-                {
-                    Cities = cities,
-                    Name = "Colombia"
-                });
-
-                await this.context.SaveChangesAsync();
+                await this.AddCountriesAndCitiesAsync();
             }
 
-            // Add user
-            var user = await this.userHelper.GetUserByEmailAsync("danielgiraldo92@gmail.com");
-            if (user == null)
-            {
-                user = new User
-                {
-                    FirstName = "Daniel",
-                    LastName = "Giraldo",
-                    Email = "danielgiraldo92@gmail.com",
-                    UserName = "danielgiraldo92@gmail.com",
-                    PhoneNumber = "123456987",
-                    Address = "Calle Luna Calle Sol",
-                    CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
-                    City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
-                };
-
-                var result = await this.userHelper.AddUserAsync(user, "123456");
-                if (result != IdentityResult.Success)
-                {
-                    throw new InvalidOperationException("Could not create the user in seeder");
-                }
-
-                await this.userHelper.AddUserToRoleAsync(user, "Admin");
-                var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
-                await this.userHelper.ConfirmEmailAsync(user, token);
-            }
-
-            var isInRole = await this.userHelper.IsUserInRoleAsync(user, "Admin");
-            if (!isInRole)
-            {
-                await this.userHelper.AddUserToRoleAsync(user, "Admin");
-            }
+            await this.CheckUserAsync("pepito@gmail.com", "Pepito", "Perez", "Customer");
+            await this.CheckUserAsync("camilo@gmail.com", "Camilo", "Giraldo", "Customer");
+            var user = await this.CheckUserAsync("danielgiraldo92@gmail.com", "Daniel", "Giraldo", "Admin");
 
             // Add products
             if (!this.context.Products.Any())
             {
-                this.AddProduct("Sombrero", user);
-                this.AddProduct("Reloj", user);
-                this.AddProduct("Gafas", user);
+                this.AddProduct("audifonos", 50, user);
+                this.AddProduct("controlps4", 60, user);
+                this.AddProduct("controlwiiu", 70, user);
+                this.AddProduct("controlxboxone", 40, user);
+                this.AddProduct("gafasinteligentes", 400, user);
+                this.AddProduct("galaxyj6", 300, user);
+                this.AddProduct("gps", 200, user);
+                this.AddProduct("ipad", 450, user);
+                this.AddProduct("iphone6splus", 400, user);
+                this.AddProduct("parlante", 47, user);
+                this.AddProduct("ps4", 600, user);
+                this.AddProduct("relojinteligente", 500, user);
+                this.AddProduct("tablet", 145, user);
+                this.AddProduct("xboxone", 580, user);
                 await this.context.SaveChangesAsync();
-            }
-
-            // Add other user
-            user = await this.userHelper.GetUserByEmailAsync("pepito@gmail.com");
-            if (user == null)
-            {
-                user = new User
-                {
-                    FirstName = "Pedro",
-                    LastName = "Perez",
-                    Email = "pepito@gmail.com",
-                    UserName = "pepito@gmail.com",
-                    PhoneNumber = "555555",
-                    Address = "Calle Luna Calle Sol",
-                    CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
-                    City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
-                };
-
-                var result = await this.userHelper.AddUserAsync(user, "654321");
-                if (result != IdentityResult.Success)
-                {
-                    throw new InvalidOperationException("Could not create the user in seeder");
-                }
-
-                await this.userHelper.AddUserToRoleAsync(user, "Customer");
-                var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
-                await this.userHelper.ConfirmEmailAsync(user, token);
-            }
-
-            isInRole = await this.userHelper.IsUserInRoleAsync(user, "Customer");
-            if (!isInRole)
-            {
-                await this.userHelper.AddUserToRoleAsync(user, "Customer");
-            }
-
-            user = await this.userHelper.GetUserByEmailAsync("camilo@gmail.com");
-            if (user == null)
-            {
-                user = new User
-                {
-                    FirstName = "Camilo",
-                    LastName = "Giraldo",
-                    Email = "camilo@gmail.com",
-                    UserName = "camilo@gmail.com",
-                    PhoneNumber = "555555",
-                    Address = "Calle Luna Calle Sol",
-                    CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
-                    City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
-                };
-
-                var result = await this.userHelper.AddUserAsync(user, "654321");
-                if (result != IdentityResult.Success)
-                {
-                    throw new InvalidOperationException("Could not create the user in seeder");
-                }
-
-                await this.userHelper.AddUserToRoleAsync(user, "Customer");
-                var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
-                await this.userHelper.ConfirmEmailAsync(user, token);
-            }
-
-            isInRole = await this.userHelper.IsUserInRoleAsync(user, "Customer");
-            if (!isInRole)
-            {
-                await this.userHelper.AddUserToRoleAsync(user, "Customer");
             }
         }
 
-        private void AddProduct(string name, User user)
+        private async Task<User> CheckUserAsync(string userName, string firstName, string lastName, string role)
+        {
+            // Add user
+            var user = await this.userHelper.GetUserByEmailAsync(userName);
+            if (user == null)
+            {
+                user = await this.AddUser(userName, firstName, lastName, role);
+            }
+
+            var isInRole = await this.userHelper.IsUserInRoleAsync(user, role);
+            if (!isInRole)
+            {
+                await this.userHelper.AddUserToRoleAsync(user, role);
+            }
+
+            return user;
+        }
+
+        private async Task<User> AddUser(string userName, string firstName, string lastName, string role)
+        {
+            var user = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = userName,
+                UserName = userName,
+                Address = "Calle 1234",
+                PhoneNumber = "654 00 89",
+                CityId = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault().Id,
+                City = this.context.Countries.FirstOrDefault().Cities.FirstOrDefault()
+            };
+
+            var result = await this.userHelper.AddUserAsync(user, "123456");
+            if (result != IdentityResult.Success)
+            {
+                throw new InvalidOperationException("Could not create the user in seeder");
+            }
+
+            await this.userHelper.AddUserToRoleAsync(user, role);
+            var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
+            await this.userHelper.ConfirmEmailAsync(user, token);
+            return user;
+        }
+
+        private async Task AddCountriesAndCitiesAsync()
+        {
+            this.AddCountry("Colombia", new string[] { "Medellín", "Bogota", "Calí", "Barranquilla", "Bucaramanga", "Cartagena", "Pereira" });
+            this.AddCountry("Argentina", new string[] { "Córdoba", "Buenos Aires", "Rosario", "Tandil", "Salta", "Mendoza" });
+            this.AddCountry("Estados Unidos", new string[] { "New York", "Los Ángeles", "Chicago", "Washington", "San Francisco", "Miami", "Boston" });
+            this.AddCountry("Ecuador", new string[] { "Quito", "Guayaquil", "Ambato", "Manta", "Loja", "Santo" });
+            this.AddCountry("Peru", new string[] { "Lima", "Arequipa", "Cusco", "Trujillo", "Chiclayo", "Iquitos" });
+            this.AddCountry("Chile", new string[] { "Santiago", "Valdivia", "Concepcion", "Puerto Montt", "Temucos", "La Sirena" });
+            this.AddCountry("Uruguay", new string[] { "Montevideo", "Punta del Este", "Colonia del Sacramento", "Las Piedras" });
+            this.AddCountry("Bolivia", new string[] { "La Paz", "Sucre", "Potosi", "Cochabamba" });
+            this.AddCountry("Venezuela", new string[] { "Caracas", "Valencia", "Maracaibo", "Ciudad Bolivar", "Maracay", "Barquisimeto" });
+            this.AddCountry("Paraguay", new string[] { "Asunción", "Ciudad del Este", "Encarnación", "San  Lorenzo", "Luque", "Areguá" });
+            this.AddCountry("Brasil", new string[] { "Rio de Janeiro", "São Paulo", "Salvador", "Porto Alegre", "Curitiba", "Recife", "Belo Horizonte", "Fortaleza" });
+            this.AddCountry("Panamá", new string[] { "Chitré", "Santiago", "La Arena", "Agua Dulce", "Monagrillo", "Ciudad de Panamá", "Colón", "Los Santos" });
+            this.AddCountry("México", new string[] { "Guadalajara", "Ciudad de México", "Monterrey", "Ciudad Obregón", "Hermosillo", "La Paz", "Culiacán", "Los Mochis" });
+            await this.context.SaveChangesAsync();
+        }
+
+        private void AddCountry(string country, string[] cities)
+        {
+            var theCities = cities.Select(c => new City { Name = c }).ToList();
+            this.context.Countries.Add(new Country
+            {
+                Cities = theCities,
+                Name = country
+            });
+        }
+
+        private async Task CheckRoles()
+        {
+            await this.userHelper.CheckRoleAsync("Admin");
+            await this.userHelper.CheckRoleAsync("Customer");
+        }
+
+        private void AddProduct(string name, decimal price, User user)
         {
             this.context.Products.Add(new Product
             {
                 Name = name,
-                Price = this.random.Next(100),
+                Price = price,
                 IsAvailabe = true,
                 Stock = this.random.Next(100),
-                User = user
+                User = user,
+                ImageUrl = $"~/images/Products/{name}.png"
             });
         }
     }
