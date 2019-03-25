@@ -67,6 +67,8 @@
                 }
 
                 await this.userHelper.AddUserToRoleAsync(user, "Admin");
+                var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await this.userHelper.ConfirmEmailAsync(user, token);
             }
 
             var isInRole = await this.userHelper.IsUserInRoleAsync(user, "Admin");
@@ -107,6 +109,8 @@
                 }
 
                 await this.userHelper.AddUserToRoleAsync(user, "Customer");
+                var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await this.userHelper.ConfirmEmailAsync(user, token);
             }
 
             isInRole = await this.userHelper.IsUserInRoleAsync(user, "Customer");
@@ -137,6 +141,8 @@
                 }
 
                 await this.userHelper.AddUserToRoleAsync(user, "Customer");
+                var token = await this.userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await this.userHelper.ConfirmEmailAsync(user, token);
             }
 
             isInRole = await this.userHelper.IsUserInRoleAsync(user, "Customer");
