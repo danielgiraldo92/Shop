@@ -2,6 +2,8 @@
 {
     using System.Windows.Input;
     using GalaSoft.MvvmLight.Command;
+    using Newtonsoft.Json;
+    using Shop.Common.Helpers;
     using Shop.Common.Models;
     using Shop.Common.Services;
     using Shop.UIForms.Views;
@@ -12,6 +14,8 @@
         private readonly ApiService apiService;
         private bool isRunning;
         private bool isEnabled;
+
+        public bool IsRemember { get; set; }
 
         public bool IsRunning
         {
@@ -34,9 +38,8 @@
         public LoginViewModel()
         {
             this.apiService = new ApiService();
-            this.Email = "danielgiraldo92@gmail.com";
             this.IsEnabled = true;
-            this.Password = "123456";
+            this.IsRemember = true;
         }
 
         private async void Login()
@@ -89,8 +92,16 @@
 
             var token = (TokenResponse)response.Result;
             var mainViewModel = MainViewModel.GetInstance();
+            mainViewModel.UserEmail = this.Email;
+            mainViewModel.UserPassword = this.Password;
             mainViewModel.Token = token;
             mainViewModel.Products = new ProductsViewModel();
+
+            Settings.IsRemember = this.IsRemember;
+            Settings.UserEmail = this.Email;
+            Settings.UserPassword = this.Password;
+            Settings.Token = JsonConvert.SerializeObject(token);
+
             Application.Current.MainPage = new MasterPage();
         }
     }
