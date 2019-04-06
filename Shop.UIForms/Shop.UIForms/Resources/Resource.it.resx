@@ -150,4 +150,7 @@
   <data name="Remember" xml:space="preserve">
     <value>Ricordati di me in questo dispositivo!</value>
   </data>
+  <data name="RegisterNewUser" xml:space="preserve">
+    <value>Registra una nuova utenza</value>
+  </data>
 </root>
