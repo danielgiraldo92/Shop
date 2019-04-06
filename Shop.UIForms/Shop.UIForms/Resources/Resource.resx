@@ -153,4 +153,7 @@
   <data name="RegisterNewUser" xml:space="preserve">
     <value>Register New User</value>
   </data>
+  <data name="Forgot" xml:space="preserve">
+    <value>Forgot my password?</value>
+  </data>
 </root>

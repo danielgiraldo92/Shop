@@ -106,6 +106,15 @@ namespace Shop.UIForms.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Forgot my password?.
+        /// </summary>
+        public static string Forgot {
+            get {
+                return ResourceManager.GetString("Forgot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Login.
         /// </summary>
         public static string Login {
