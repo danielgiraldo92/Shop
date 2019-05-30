@@ -43,6 +43,11 @@
             this.apiService = apiService;
             this.dialogService = dialogService;
             this.navigationService = navigationService;
+        }
+
+        public override void ViewAppeared()
+        {
+            base.ViewAppeared();
             this.LoadProducts();
         }
 
