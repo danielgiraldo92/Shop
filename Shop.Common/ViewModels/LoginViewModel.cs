@@ -87,12 +87,6 @@
                 return;
             }
 
-            //if (!this.networkProvider.IsConnectedToWifi())
-            //{
-            //    this.dialogService.Alert("Error", "You need internet connection to enter to the App.", "Accept");
-            //    return;
-            //}
-
             this.IsLoading = true;
 
             var request = new TokenRequest
@@ -115,10 +109,21 @@
             }
 
             var token = (TokenResponse)response.Result;
+
+            var response2 = await this.apiService.GetUserByEmailAsync(
+                "https://shopzulu.azurewebsites.net",
+                "/api",
+                "/Account/GetUserByEmail",
+                this.Email,
+                "bearer",
+                token.Token);
+
+            var user = (User)response2.Result;
+            Settings.UserPassword = this.Password;
+            Settings.User = JsonConvert.SerializeObject(user);
             Settings.UserEmail = this.Email;
             Settings.Token = JsonConvert.SerializeObject(token);
             this.IsLoading = false;
-
             await this.navigationService.Navigate<ProductsViewModel>();
         }
 
